@@ -5,8 +5,7 @@
 #>
 
 #TODO: Add schedualed jobs to the Process block
-#TODO: Credential parameter doesn't work
-#TODO: Restart parameter doesn't work
+
     param(
 
         [Parameter(Mandatory=$TRUE,
@@ -17,7 +16,12 @@
         [Parameter(Mandatory=$TRUE,
                     HelpMessage="Enter Domain Name.")] 
                     [String]
-                    $DomainName                    
+                    $DomainName,
+
+		[Parameter(Mandatory=$TRUE,
+                    HelpMessage="Enter Admin Username.")] 
+                    [String]
+                    $Username
         )
 
     BEGIN {
@@ -49,7 +53,7 @@
         #Join the domain & rename the PC
         Write-Host "Renaming computer to $NewName" -ForegroundColor "Green"
         Write-Host "Joining $DomainName domain" -ForegroundColor "Green"
-        Add-Computer -ComputerName localhost -DomainName $DomainName -NewName $NewName -Credential -Restart -Force
+        Add-Computer -ComputerName localhost -DomainName $DomainName -NewName $NewName -Credential "$DomainName\$Username" -Restart -Force
         Write-Host "Restarting Computer" -ForegroundColor "Green"
 
     }
