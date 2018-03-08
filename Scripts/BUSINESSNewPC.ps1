@@ -5,7 +5,8 @@
 #>
 
 #TODO: Add schedualed jobs to the Process block
-
+#TODO: Credential parameter doesn't work
+#TODO: Restart parameter doesn't work
     param(
 
         [Parameter(Mandatory=$TRUE,
