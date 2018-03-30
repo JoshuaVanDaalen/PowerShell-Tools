@@ -39,13 +39,13 @@ Function Add-BUSINESSADGroupMember {
     BEGIN {
     
 		Write-verbose "Testing $ErrorLogFilePath exists."
-		$PathBool = Test-Path -Path $ErrorLogFilePath 
+		$PathBool = Test-Path -Path $ErrorLogFilePath | Out-Null
 		Write-verbose "Does $ErrorLogFilePath exisit? $PathBool"
 
 		if ($PathBool = 'False') {
         
             Write-Verbose "Creating $ErrorLogFilePath."
-            New-Item -Path $ErrorLogFilePath -ItemType File -Force
+            New-Item -Path $ErrorLogFilePath -ItemType File -Force | Out-Null
             Write-Verbose "Error log path created."
         }
     }
@@ -56,8 +56,9 @@ Function Add-BUSINESSADGroupMember {
             Try {                      
                  
 				Write-Verbose "Testing if $User exists."
-                $ADUser = Get-ADUser "$User" -Properties 'mail' -ErrorAction 'Stop'
-				$Member = $ADUser.name
+                $ADUsername = Get-ADUser "$User" -Properties 'mail' -ErrorAction 'Stop'
+				$Member = $ADUser.Name
+				$SamAccountName = $ADUser.SamAccountName 
 				Write-Verbose "$User located."
 
 				Try{
@@ -76,7 +77,8 @@ Function Add-BUSINESSADGroupMember {
 						Write-Verbose "Build custom object properties."
 						$Properties = @{
 												Status = "Member added"
-												User = $Member
+												Username = $SamAccountName
+												Name = $Member
 												Group = $Identity}
 					}
 					Catch {
@@ -89,7 +91,8 @@ Function Add-BUSINESSADGroupMember {
 						Write-Verbose "Build custom object properties."
 						$Properties = @{
 												Status = "Error adding $Member to $Identity"
-												User = $null
+												Username = $null
+												Name = $null
 												Group = $null}                        
 					}
 				}
@@ -103,8 +106,9 @@ Function Add-BUSINESSADGroupMember {
 					Write-Verbose "Build custom object properties."
 					$Properties = @{
 											Status = "$ADGroup not found"
-											User = $null
-											Group = $null}
+											Username = $null
+											Name = $null
+											Group = $null}  
 				}
             }
             Catch {
@@ -117,9 +121,10 @@ Function Add-BUSINESSADGroupMember {
 				Write-Verbose "Build custom object properties."
                 $Properties = @{
 										Status = "$User not found"
-										User = $null
-										Group = $null}
-            }
+										Username = $null
+										Name = $null
+										Group = $null}  
+			}
             Finally{
 
 				Write-Verbose "Create new custom object." 
@@ -186,12 +191,12 @@ Function Copy-BUSINESSADGroupMember {
             Try {
                     
                 #Get the From User's groups.
-                $FromUser = Get-ADUser $From -Properties * -ErrorAction Stop
+                $FromUsername = Get-ADUser $From -Properties * -ErrorAction Stop
 
                 Try { 
                         
                     #Get the To User.
-                    $ToUser = Get-ADUser $To -Properties * -ErrorAction Stop
+                    $ToUsername = Get-ADUser $To -Properties * -ErrorAction Stop
                     $ToUsername = $ToUser.SamAccountName
 
                     Try {
@@ -285,7 +290,7 @@ Function Remove-BUSINESSADGroupMember {
         Try {
                     
 			#Get the From User's groups.
-			$ADUser = Get-ADUser "$Username" -Properties * -ErrorAction Stop
+			$ADUsername = Get-ADUser "$Username" -Properties * -ErrorAction Stop
 			$SamAccountName = $ADuser.SamAccountName
 			$MemberOf = $ADUser.MemberOf
 			$ErrorsHappened = "$FALSE"
