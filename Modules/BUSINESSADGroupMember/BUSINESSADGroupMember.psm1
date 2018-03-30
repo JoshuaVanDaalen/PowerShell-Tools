@@ -1,4 +1,4 @@
-﻿$LogPreference = "C:\PoSH\ADGroupMember\Add-ADGroupMember.txt"
+﻿$LogPreference = "C:\PoSH\BUSINESSADGroupMember"
 
 Function Add-BUSINESSADGroupMember {
 
@@ -38,16 +38,21 @@ Function Add-BUSINESSADGroupMember {
 
     BEGIN {
     
-		Write-verbose "Testing $ErrorLogFilePath exists."
-		$PathBool = Test-Path -Path $ErrorLogFilePath | Out-Null
-		Write-verbose "Does $ErrorLogFilePath exisit? $PathBool"
+		Write-Verbose "Testing if error path exists."
+		$FullLogPath = "$ErrorLogFilePath\Add-ADGroupMember.txt"
+		$PathBool = Test-Path -Path $FullLogPath
+		$Date = Get-Date
 
-		if ($PathBool = 'False') {
-        
-            Write-Verbose "Creating $ErrorLogFilePath."
-            New-Item -Path $ErrorLogFilePath -ItemType File -Force | Out-Null
-            Write-Verbose "Error log path created."
-        }
+		if ($PathBool) {
+
+			Write-Verbose "Log path exists."
+		}
+		elseif ($PathBool = "$false") {
+
+			Write-Verbose "Creating error log directory."
+			New-Item -Path "$FullLogPath" -ItemType 'File' -Force | Out-Null
+			Write-Verbose "Error log directory created."
+		}
     }
     PROCESS {
         Foreach ($User in $Username) {
@@ -56,10 +61,10 @@ Function Add-BUSINESSADGroupMember {
             Try {                      
                  
 				Write-Verbose "Testing if $User exists."
-                $ADUsername = Get-ADUser "$User" -Properties 'mail' -ErrorAction 'Stop'
+                $ADUser = Get-ADUser -Identity "$User" -Properties 'mail' -ErrorAction 'Stop'
 				$Member = $ADUser.Name
 				$SamAccountName = $ADUser.SamAccountName 
-				Write-Verbose "$User located."
+				Write-Verbose "$Member located."
 
 				Try{
 					
@@ -70,8 +75,8 @@ Function Add-BUSINESSADGroupMember {
 
 					Try {
 
-						Write-Verbose "Attempting to add $Member to $Identity."
-						$Session = Add-ADGroupMember -Identity "$Identity" -Member "$Member" -ErrorAction Stop
+						Write-Verbose "Attempting to add $SamAccountName to $Identity."
+						$Session = Add-ADGroupMember -Identity "$Identity" -Member "$SamAccountName" -ErrorAction 'Stop'
 						Write-Verbose "$Member added to $Identity successfully."
 
 						Write-Verbose "Build custom object properties."
@@ -83,52 +88,58 @@ Function Add-BUSINESSADGroupMember {
 					}
 					Catch {
                         
-						Write-Verbose "$Member Was not added to $Identity."
+						Write-Verbose "Failed to add $Member to $Identity."
 						Write-Verbose "Appending error log."
-						"$Member Was not added to $Identity." | Out-File $ErrorLogFilePath -Append
+
+						"$Member Was not added to $Identity." | Out-File $FullLogPath -Append
+						"$Date" | Out-File $FullLogPath -Append
 						$ErrorsHappened = $True
 
 						Write-Verbose "Build custom object properties."
 						$Properties = @{
-												Status = "Error adding $Member to $Identity"
-												Username = $null
-												Name = $null
-												Group = $null}                        
+												Status = "Failed to add $SamAccountName"
+												Username = "$SamAccountName"
+												Name = "$Member"
+												Group = "$Identity"}
 					}
 				}
 				Catch {
 
 					Write-Verbose "$ADGroup was not found."
-					Write-Verbose "Appending error log."                                        
-					"$ADGroup was not found." | Out-File $ErrorLogFilePath -Append
+					Write-Verbose "Appending error log."
+
+					"$ADGroup was not found." | Out-File $FullLogPath -Append
+					"$Date" | Out-File $FullLogPath -Append
 					$ErrorsHappened = $True
 
 					Write-Verbose "Build custom object properties."
 					$Properties = @{
-											Status = "$ADGroup not found"
-											Username = $null
-											Name = $null
-											Group = $null}  
+											Status = "Failed to find $ADGroup"
+											Username = "$SamAccountName"
+											Name = "$Member"
+											Group = "null"}
 				}
-            }
+			}
             Catch {
 
 				Write-Verbose "$User was not found." 
 				Write-Verbose "Appending error log."                                           
-                "$User was not found." | Out-File $ErrorLogFilePath -Append
-                $ErrorsHappened = $True
+                
+				"$User was not found." | Out-File $FullLogPath -Append
+                "$Date" | Out-File $FullLogPath -Append
+				$ErrorsHappened = $True
 
 				Write-Verbose "Build custom object properties."
                 $Properties = @{
-										Status = "$User not found"
-										Username = $null
-										Name = $null
-										Group = $null}  
+										Status = "Failed to find $User"
+										Username = "null"
+										Name = "null"
+										Group = "null"}  
 			}
             Finally{
 
 				Write-Verbose "Create new custom object." 
-				$Object = New-Object -TypeName PSObject -Property $Properties  
+				$Object = New-Object -TypeName 'PSObject' -Property $Properties  
 				Write-Verbose "Display custom object." 
 				Write-Output $Object 
             }
@@ -138,12 +149,11 @@ Function Add-BUSINESSADGroupMember {
                                 
 		if($ErrorsHappened) { 
 
-			Write-verbose "Error has been logged to $ErrorLogFilePath."
+			Write-verbose "Error has been logged to $FullLogPath."
 		}
     }
 }
 
-$LogPreference = "C:\PoSH\ADGroupMember\Copy-ADGroupMember.txt"
 
 #TODO: Update comment block.
 #TODO: Update params Help Messages.
@@ -181,8 +191,16 @@ Function Copy-BUSINESSADGroupMember {
                     $ErrorLogFilePath = $LogPreference)
     BEGIN {
     
-                Remove-Item -Path $ErrorLogFilePath -Force -ErrorAction SilentlyContinue
-                $ErrorsHappened = $false
+		Write-verbose "Testing if error path exists."
+		$PathBool = Test-Path -Path $ErrorLogFilePath | Out-Null
+		$Date = Get-Date | Out-Null
+
+		if ($PathBool = 'False') {
+        
+            Write-Verbose "Creating $ErrorLogFilePath."
+            New-Item -Path "$ErrorLogFilePath\Copy-ADGroupMember.txt" -ItemType File -Force | Out-Null
+            Write-Verbose "Error log path created."
+        }
     }
     PROCESS {
 
@@ -247,8 +265,8 @@ Function Copy-BUSINESSADGroupMember {
     }
 }
 
-$LogPreference = "C:\PoSH\ADGroupMember\Remove-BUSINESSADGroupMember.txt"
-$Filepath = "C:\PoSH\ADGroupMember\BackupLogs"
+
+$BackUpLog = "C:\PoSH\ADGroupMember\BackupLogs"
 
 #TODO: Add a foreach to the process block to allow mulitple users.
 #TODO: Update comment block.
@@ -282,9 +300,16 @@ Function Remove-BUSINESSADGroupMember {
                     $ErrorLogFilePath = $LogPreference)
     BEGIN {
     
-        Remove-Item -Path $ErrorLogFilePath -Force -ErrorAction SilentlyContinue
-        $ErrorsHappened = $false
-        $Filepath = "$Filepath\Removed\$Username BackupOfGroups.txt"        
+		Write-verbose "Testing if error path exists."
+		$PathBool = Test-Path -Path $ErrorLogFilePath | Out-Null
+		$Date = Get-Date | Out-Null
+
+		if ($PathBool = 'False') {
+        
+            Write-Verbose "Creating $ErrorLogFilePath."
+            New-Item -Path "$ErrorLogFilePath\Remove-BUSINESSADGroupMember.txt" -ItemType File -Force | Out-Null
+            Write-Verbose "Error log path created."
+        }
     }
     PROCESS {
         Try {
@@ -300,11 +325,11 @@ Function Remove-BUSINESSADGroupMember {
                 #Backup the Users Groups to file path.
                 Foreach ($Group in $MemberOf) {
 
-                    $Group | Out-File $Filepath -Append -ErrorAction stop 
+                    $Group | Out-File $BackUpLog -Append -ErrorAction stop 
                     $ErrorsHappened = "$FALSE"
                 }
 
-		        Write-Host "$SamAccountName's groups backed up to $Filepath" -ForegroundColor Green
+		        Write-Host "$SamAccountName's groups backed up to $BackUpLog" -ForegroundColor Green
 		        Write-Host "Removing the following groups from $SamAccountName" -ForegroundColor Green 
 
                 Try {
