@@ -90,7 +90,6 @@ Function Add-BUSINESSADGroupMember {
                         
 						Write-Verbose "Failed to add $Member to $Identity."
 						Write-Verbose "Appending error log."
-
 						"$Member Was not added to $Identity." | Out-File $FullLogPath -Append
 						"$Date" | Out-File $FullLogPath -Append
 						$ErrorsHappened = $True
@@ -107,7 +106,6 @@ Function Add-BUSINESSADGroupMember {
 
 					Write-Verbose "$ADGroup was not found."
 					Write-Verbose "Appending error log."
-
 					"$ADGroup was not found." | Out-File $FullLogPath -Append
 					"$Date" | Out-File $FullLogPath -Append
 					$ErrorsHappened = $True
@@ -123,8 +121,7 @@ Function Add-BUSINESSADGroupMember {
             Catch {
 
 				Write-Verbose "$User was not found." 
-				Write-Verbose "Appending error log."                                           
-                
+				Write-Verbose "Appending error log."
 				"$User was not found." | Out-File $FullLogPath -Append
                 "$Date" | Out-File $FullLogPath -Append
 				$ErrorsHappened = $True
