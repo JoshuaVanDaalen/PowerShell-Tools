@@ -1,107 +1,140 @@
 ﻿$LogPreference = "C:\PoSH\ADGroupMember\Add-ADGroupMember.txt"
 
-#TODO: Update comment block.
-#TODO: Update params Help Messages.
 Function Add-BUSINESSADGroupMember {
 
 <#
     .Synopsis
-    Adds Mail Contacts to a Distibuton Group via CSV file 
+	    Add a user to a Active Directory group.
+
     .DESCRIPTION
-    The New-BUSINESSDistributionGroupMember function uses a CSV file to populate a Distribution Group.
-
-    Mandatory parameters are used to locate the file path of the CSV, and identitfy what Distribution Group you are changing.
-
-    This function uses the CSV file to collect Email Addresses and find if they have a Mail Contact that can be added to the chosen Distribution Group, the Email Addresses that don't have a Mail Contact and listed in the error log file path and displayed in the console window.
+		The Add-BUSINESSADGroupMember function accepts an array of usernames that will be added to the Active Directory Group you choose.
 
     .EXAMPLE
-        Set-BUSINESSDistributionGroupMember -Username 'UserX' -DistributionGroup "All Australian Users"
-    .NOTES
-    You need to have the exchange module to use this function.
+		Add-BUSINESSADGroupMember -Username 'UserX' -ADGroup "GroupY"
+    
+	.NOTES
+		You need to have the Exchange module to use this function.
+		You need to have the Active Directory module to use this function.
+
+	.LINK
+		https://github.com/greenSacrifice/WindowsPowerShell/blob/master/Modules/BUSINESSADGroupMember/BUSINESSADGroupMember.psm1
 #>
 
     [cmdletBinding()]
     param(
-        #Path that contains the CSV file.
         [Parameter(Mandatory=$True,
-                    HelpMessage="Enter The File Path of CSV Document")] 
+                    HelpMessage="Enter Username")] 
                     [String[]]
                     $Username,
             
-        #Distribution Group that will be appended.
         [Parameter(Mandatory=$True,
-                    HelpMessage="Enter The Distibution Group")] 
-                    [String[]]
-                    $DistributionGroup,
+                    HelpMessage="Enter Distibution Group")] 
+                    [String]
+                    $ADGroup,
 
-        #Creates an Object for the error path variable.
         [Parameter()]
                     [String]
                     $ErrorLogFilePath = $LogPreference)
+
     BEGIN {
     
-                Remove-Item -Path $ErrorLogFilePath -Force -ErrorAction SilentlyContinue
-                $ErrorsHappened = $false
+		Write-verbose "Testing $ErrorLogFilePath exists."
+		$PathBool = Test-Path -Path $ErrorLogFilePath 
+		Write-verbose "Does $ErrorLogFilePath exisit? $PathBool"
 
+		if ($PathBool = 'False') {
+        
+            Write-Verbose "Creating $ErrorLogFilePath."
+            New-Item -Path $ErrorLogFilePath -ItemType File -Force
+            Write-Verbose "Error log path created."
+        }
     }
     PROCESS {
         Foreach ($User in $Username) {
+			Write-Verbose "Iterating each user in username array."
   
             Try {                      
-                    
-                $ADUser = Get-ADUser "$User" -Properties mail
+                 
+				Write-Verbose "Testing if $User exists."
+                $ADUser = Get-ADUser "$User" -Properties 'mail' -ErrorAction 'Stop'
+				$Member = $ADUser.name
+				Write-Verbose "$User located."
 
-                Try { 
+				Try{
+					
+					Write-Verbose "Testing if $ADGroup exists."
+					$Group = Get-ADGroup -Identity "$ADGroup" -ErrorAction 'Stop'
+					$Identity = $Group.SamAccountName
+					Write-Verbose "$Identity located."
 
-                    $Session = Add-ADGroupMember -Identity "$DistributionGroup" -Member "$ADUser.name" -ErrorAction Stop
+					Try {
 
-                    # A Hash tabel is created to that is used to output the data to the console.
-                    $Properties = @{Status = "Member added"
-                                    Email = $ADUser.name
-                                    DistributionGroup = $DistributionGroup} 
+						Write-Verbose "Attempting to add $Member to $Identity."
+						$Session = Add-ADGroupMember -Identity "$Identity" -Member "$Member" -ErrorAction Stop
+						Write-Verbose "$Member added to $Identity successfully."
 
-                    }
-                Catch {
+						Write-Verbose "Build custom object properties."
+						$Properties = @{
+												Status = "Member added"
+												User = $Member
+												Group = $Identity}
+					}
+					Catch {
                         
-                    $DistributionGroup | Out-File $ErrorLogFilePath -Append
-                    $ErrorsHappened = $True
+						Write-Verbose "$Member Was not added to $Identity."
+						Write-Verbose "Appending error log."
+						"$Member Was not added to $Identity." | Out-File $ErrorLogFilePath -Append
+						$ErrorsHappened = $True
 
-                    $Properties = @{Status = "$DistributionGroup not found"
-                                    Email = $ADUser.name
-                                    DistributionGroup = $null}                        
-                }
+						Write-Verbose "Build custom object properties."
+						$Properties = @{
+												Status = "Error adding $Member to $Identity"
+												User = $null
+												Group = $null}                        
+					}
+				}
+				Catch {
+
+					Write-Verbose "$ADGroup was not found."
+					Write-Verbose "Appending error log."                                        
+					"$ADGroup was not found." | Out-File $ErrorLogFilePath -Append
+					$ErrorsHappened = $True
+
+					Write-Verbose "Build custom object properties."
+					$Properties = @{
+											Status = "$ADGroup not found"
+											User = $null
+											Group = $null}
+				}
             }
             Catch {
-                                        
-                $Email.PrimarySMTPAddress | Out-File $ErrorLogFilePath -Append
+
+				Write-Verbose "$User was not found." 
+				Write-Verbose "Appending error log."                                           
+                "$User was not found." | Out-File $ErrorLogFilePath -Append
                 $ErrorsHappened = $True
 
-                $Properties = @{Status = "$User not found"
-                                Email = $null
-                                DistributionGroup = $null} 
+				Write-Verbose "Build custom object properties."
+                $Properties = @{
+										Status = "$User not found"
+										User = $null
+										Group = $null}
             }
-            Finally{    
-                                
-                if($ErrorsHappened = $True) { 
+            Finally{
 
-					$obj = New-Object -TypeName PSObject -Property $Properties  
-					Write-Output $obj 
-                }
-
-                elseif ($ErrorsHappened = $false) {
-                                
-                    $obj = New-Object -TypeName PSObject -Property $Properties
-                    Write-Output $obj                               
-
-                }
+				Write-Verbose "Create new custom object." 
+				$Object = New-Object -TypeName PSObject -Property $Properties  
+				Write-Verbose "Display custom object." 
+				Write-Output $Object 
             }
 		}
     }
     END {
-        if ($ErrorsHappened) {
+                                
+		if($ErrorsHappened) { 
 
 			Write-verbose "Error has been logged to $ErrorLogFilePath."
-        }
+		}
     }
 }
 
