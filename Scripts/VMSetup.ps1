@@ -44,21 +44,25 @@
 #Install Chrome
     Choco install googlechrome -y
 
-#Install Java
-    Choco install jre8 -y
-
-#Install Python
-    Choco install python -y
-
 #Install Firefox
     Choco install firefox -y
 
-#Install Burp Proxy
-    Choco install burp-suite-free-edition -y
+#Install Sysinternals
+    Choco install sysinternals -y
 
 #Install Visual Studio Code
     choco install visualstudiocode -y
 
 #Install Git
     choco install git -y
+}
+
+#Set Variables
+{
+    $envPath = $env:Path
+
+    $sysinternals = "$envPath" + ";" + "C:\SysinternalsSuite"
+    
+    [Environment]::SetEnvironmentVariable("Path", "$sysinternals", "Machine")
+
 }

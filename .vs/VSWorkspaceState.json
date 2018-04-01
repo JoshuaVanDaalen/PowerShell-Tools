@@ -1,8 +1,12 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Scripts"
+    "\\Modules",
+    "\\Modules\\BUSINESSADGroupMember",
+    "\\Modules\\BUSINESSExportPST",
+    "\\Modules\\BUSINESSMailboxPermissions",
+    "\\Modules\\BUSINESSPassword"
   ],
-  "SelectedNode": "\\Scripts\\BUSINESSNewPC.ps1",
+  "SelectedNode": "\\Modules\\BUSINESSMailboxPermissions\\BUSINESSMailboxPermissions.psm1",
   "PreviewInSolutionExplorer": false
 }
