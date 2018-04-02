@@ -7,6 +7,6 @@
     "\\Modules\\BUSINESSMailboxPermissions",
     "\\Modules\\BUSINESSPassword"
   ],
-  "SelectedNode": "\\Modules\\BUSINESSMailboxPermissions\\BUSINESSMailboxPermissions.psm1",
+  "SelectedNode": "\\Modules\\BUSINESSADGroupMember\\BUSINESSADGroupMember.psm1",
   "PreviewInSolutionExplorer": false
 }

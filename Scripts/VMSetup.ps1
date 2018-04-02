@@ -1,6 +1,7 @@
 ﻿<#	    
     1. Create Powershell Profile
     2. Install Programs
+    3. Create new PATH parameter
 #>
 
 #TODO: Create a variable with a tostring method to populate profile, replace ' with " so that you can change run the changes without having to reopen window.

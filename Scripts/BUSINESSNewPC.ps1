@@ -25,9 +25,6 @@
         )
 
     BEGIN {
-    
-        $DomainName = ""
-
     }
 
     PROCESS { 
@@ -38,7 +35,7 @@
 
         #Download Chocolately.
         Write-Host "Downloading Chocolatey." -ForegroundColor "Green"
-        Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+        Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
         #Install google
         Write-host "Installing Google Chrome." -foregroundcolor "green"
@@ -62,8 +59,8 @@
     
         Set-ExecutionPolicy restricted
 
-        #Write-Host "Press any key to exit..."
+        Write-Host "Press any key to exit..."
 
-        #$x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        $x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
     }
