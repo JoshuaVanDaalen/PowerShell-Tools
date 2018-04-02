@@ -11,7 +11,7 @@
         [Parameter(Mandatory=$TRUE,
                     HelpMessage="Enter New Computer Name.")] 
                     [String]
-                    $NewName,
+                    $PCName,
 
         [Parameter(Mandatory=$TRUE,
                     HelpMessage="Enter Domain Name.")] 
@@ -21,7 +21,7 @@
 		[Parameter(Mandatory=$TRUE,
                     HelpMessage="Enter Admin Username.")] 
                     [String]
-                    $Username
+                    $AdminUsername
         )
 
     BEGIN {
@@ -30,37 +30,29 @@
     PROCESS { 
      
         #Create C:\installs folder.
-        Write-host "Directory C:\installs was created." -foregroundcolor "Green"
+        Write-host "Directory C:\installs was created." -foregroundcolor "Cyan"
         New-Item -ItemType "directory" -Path "c:\installs"
 
         #Download Chocolately.
-        Write-Host "Downloading Chocolatey." -ForegroundColor "Green"
+        Write-Host "Downloading Chocolatey." -ForegroundColor "Cyan"
         Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
         #Install google
-        Write-host "Installing Google Chrome." -foregroundcolor "green"
+        Write-host "Installing Google Chrome." -foregroundcolor "Cyan"
         choco install googlechrome -y
-        Write-host "Google Chrome Installed." -foregroundcolor "green"
+        Write-host "Google Chrome Installed." -foregroundcolor "Cyan"
 
         #Install Adobe PDF
-        Write-host "Installing Adobe PDF Reader." -foregroundcolor "green"
+        Write-host "Installing Adobe PDF Reader." -foregroundcolor "Cyan"
         choco install adobereader -y
-        Write-host "Adobe PDF Reader Installed." -foregroundcolor "green"
+        Write-host "Adobe PDF Reader Installed." -foregroundcolor "Cyan"
     
         #Join the domain & rename the PC
-        Write-Host "Renaming computer to $NewName" -ForegroundColor "Green"
-        Write-Host "Joining $DomainName domain" -ForegroundColor "Green"
+        Write-Host "Renaming computer to $NewName" -ForegroundColor "Cyan"
+        Write-Host "Joining $DomainName domain" -ForegroundColor "Cyan"
         Add-Computer -ComputerName localhost -DomainName $DomainName -NewName $NewName -Credential "$DomainName\$Username" -Restart -Force
-        Write-Host "Restarting Computer" -ForegroundColor "Green"
-
+        Write-Host "Restarting Computer" -ForegroundColor "Cyan"
     }
 
     END {
-    
-        Set-ExecutionPolicy restricted
-
-        Write-Host "Press any key to exit..."
-
-        $x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-
     }
