@@ -60,10 +60,14 @@
 
 #Set Variables
 {
-    $envPath = $env:Path
+    $Path = $env:Path
+    $env:MyTestVariable = "_NT_SYMBOL_PATH"
+    
 
-    $sysinternals = "$envPath" + ";" + "C:\SysinternalsSuite"
+    $sysinternals = "$Path" + ";" + "C:\ProgramData\chocolatey\lib\sysinternals\tools"
+    $Symbol = "srv*C:\symbols*http://msdl.microsoft.com/downloads/symbols"
     
     [Environment]::SetEnvironmentVariable("Path", "$sysinternals", "Machine")
+    [Environment]::SetEnvironmentVariable("_NT_SYMBOL_PATH", "$Symbol", "Machine")
 
 }
