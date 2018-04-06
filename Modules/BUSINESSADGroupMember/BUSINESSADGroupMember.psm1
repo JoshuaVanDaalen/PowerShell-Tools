@@ -181,6 +181,9 @@ Function Copy-BUSINESSADGroupMember {
 
     .NOTES
     You need to have the exchange module to use this function.
+
+	.LINK
+		https://github.com/greenSacrifice/WindowsPowerShell/blob/master/Modules/
 #>
 
     [cmdletBinding()]
@@ -355,6 +358,9 @@ Function Remove-BUSINESSADGroupMember {
 
     .NOTES
     You need to have the exchange module to use this function.
+    
+    .LINK
+		https://github.com/greenSacrifice/WindowsPowerShell/blob/master/Modules/
 #>
 
     [cmdletBinding()]
