@@ -2,7 +2,7 @@
 
 Function Add-BUSINESSADGroupMember {
 
-<#
+    <#
     .Synopsis
 	    Add a user to a Active Directory group.
 
@@ -10,153 +10,167 @@ Function Add-BUSINESSADGroupMember {
 		The Add-BUSINESSADGroupMember function accepts an array of usernames that will be added to the Active Directory Group you choose.
 
     .EXAMPLE
-		Add-BUSINESSADGroupMember -Username 'UserX' -ADGroup "GroupY"
+        Add-BUSINESSADGroupMember -Username 'UserX' -ADGroup "GroupY"
+
+    .EXAMPLE
+		Add-BUSINESSADGroupMember -Username 'UserX','UserY','UserZ' -ADGroup "GroupY"
     
 	.NOTES
 		You need to have the Exchange module to use this function.
 		You need to have the Active Directory module to use this function.
 
 	.LINK
-		https://github.com/greenSacrifice/WindowsPowerShell/blob/master/Modules/BUSINESSADGroupMember/BUSINESSADGroupMember.psm1
+		https://github.com/greenSacrifice/WindowsPowerShell/blob/master/Modules/
 #>
 
     [cmdletBinding()]
     param(
-        [Parameter(Mandatory=$True,
-                    HelpMessage="Enter Username")] 
-                    [String[]]
-                    $Username,
+        [Parameter(Mandatory = $True,
+            HelpMessage = "Enter Username")] 
+        [String[]]
+        $Username,
             
-        [Parameter(Mandatory=$True,
-                    HelpMessage="Enter Distibution Group")] 
-                    [String]
-                    $ADGroup,
+        [Parameter(Mandatory = $True,
+            HelpMessage = "Enter Distibution Group")] 
+        [String]
+        $ADGroup,
 
         [Parameter()]
-                    [String]
-                    $ErrorLogFilePath = $LogPreference)
+        [String]
+        $ErrorLogFilePath = $LogPreference)
 
     BEGIN {
     
-		Write-Verbose "Testing if error path exists."
-		$FullLogPath = "$ErrorLogFilePath\Add-ADGroupMember.txt"
-		$PathBool = Test-Path -Path $FullLogPath
-		$Date = Get-Date
+        Write-Verbose "Testing if error path exists."
+        $FullLogPath = "$ErrorLogFilePath\Add-ADGroupMember.txt"
+        $PathBool = Test-Path -Path $FullLogPath
+        $Date = Get-Date
 
-		if ($PathBool) {
+        if ($PathBool) {
 
-			Write-Verbose "Log path exists."
-		}
-		elseif ($PathBool = "$false") {
+            Write-Verbose "Log path exists."
+        }
+        elseif ($PathBool = "$false") {
 
-			Write-Verbose "Creating error log directory."
-			New-Item -Path "$FullLogPath" -ItemType 'File' -Force | Out-Null
-			Write-Verbose "Error log directory created."
-		}
+            Write-Verbose "Creating error log directory."
+            New-Item -Path "$FullLogPath" -ItemType 'File' -Force | Out-Null
+            Write-Verbose "Error log directory created."
+        }
     }
     PROCESS {
+
+        Write-Verbose "Iterating each user."
         Foreach ($User in $Username) {
-			Write-Verbose "Iterating each user in username array."
-  
+            
             Try {                      
                  
-				Write-Verbose "Testing if $User exists."
+                Write-Verbose "Locating $User."
                 $ADUser = Get-ADUser -Identity "$User" -Properties 'mail' -ErrorAction 'Stop'
-				$Member = $ADUser.Name
-				$SamAccountName = $ADUser.SamAccountName 
-				Write-Verbose "$Member located."
+                $Member = $ADUser.Name
+                $SamAccountName = $ADUser.SamAccountName 
+                Write-Verbose "Successful, $Member located."
 
-				Try{
+                Try {
 					
-					Write-Verbose "Testing if $ADGroup exists."
-					$Group = Get-ADGroup -Identity "$ADGroup" -ErrorAction 'Stop'
-					$Identity = $Group.SamAccountName
-					Write-Verbose "$Identity located."
+                    Write-Verbose "Testing if $ADGroup."
+                    $Group = Get-ADGroup -Identity "$ADGroup" -ErrorAction 'Stop'
+                    $Identity = $Group.SamAccountName
+                    Write-Verbose "Successful, $Identity located."
 
-					Try {
+                    Try {
 
-						Write-Verbose "Attempting to add $SamAccountName to $Identity."
-						$Session = Add-ADGroupMember -Identity "$Identity" -Member "$SamAccountName" -ErrorAction 'Stop'
-						Write-Verbose "$Member added to $Identity successfully."
+                        Write-Verbose "Collecting Parameters."
+                        $Parameters = @{
+                            'Identity'       = $Identity
+                            'SamAccountName' = $SamAccountName
+                            'ErrorAction'    = 'Stop'
+                        }
 
-						Write-Verbose "Build custom object properties."
-						$Properties = @{
-												Status = "Member added"
-												Username = $SamAccountName
-												Name = $Member
-												Group = $Identity}
-					}
-					Catch {
+                        Write-Verbose "Splatting parameters to Cmdlet."
+                        $Session = Add-ADGroupMember @Parameters
+                        Write-Verbose "Cmdlet successful."
+
+                        Write-Verbose "Build custom object properties."
+                        $Properties = @{
+                            'Status'   = "Member added"
+                            'Username' = $SamAccountName
+                            'Name'     = $Member
+                            'Group'    = $Identity
+                        }
+                    }
+                    Catch {
                         
-						Write-Verbose "Failed to add $Member to $Identity."
-						Write-Verbose "Appending error log."
-						"$Member Was not added to $Identity." | Out-File $FullLogPath -Append
-						"$Date" | Out-File $FullLogPath -Append
-						$ErrorsHappened = $True
+                        Write-Verbose "Failed to add $Member to $Identity."
+                        Write-Verbose "Appending error log."
+                        "$Member was not added to $Identity." | Out-File $FullLogPath -Append
+                        "$Date" | Out-File $FullLogPath -Append
+                        $ErrorsHappened = $True
 
-						Write-Verbose "Build custom object properties."
-						$Properties = @{
-												Status = "Failed to add $SamAccountName"
-												Username = "$SamAccountName"
-												Name = "$Member"
-												Group = "$Identity"}
-					}
-				}
-				Catch {
+                        Write-Verbose "Build custom object properties."
+                        $Properties = @{
+                            Status   = "Failed to add $SamAccountName"
+                            Username = "$SamAccountName"
+                            Name     = "$Member"
+                            Group    = "$Identity"
+                        }
+                    }
+                }
+                Catch {
 
-					Write-Verbose "$ADGroup was not found."
-					Write-Verbose "Appending error log."
-					"$ADGroup was not found." | Out-File $FullLogPath -Append
-					"$Date" | Out-File $FullLogPath -Append
-					$ErrorsHappened = $True
+                    Write-Verbose "$ADGroup was not found."
+                    Write-Verbose "Appending error log."
+                    "$ADGroup was not found." | Out-File $FullLogPath -Append
+                    "$Date" | Out-File $FullLogPath -Append
+                    $ErrorsHappened = $True
 
-					Write-Verbose "Build custom object properties."
-					$Properties = @{
-											Status = "Failed to find $ADGroup"
-											Username = "$SamAccountName"
-											Name = "$Member"
-											Group = "null"}
-				}
-			}
+                    Write-Verbose "Build custom object properties."
+                    $Properties = @{
+                        Status   = "Failed to find $ADGroup"
+                        Username = "$SamAccountName"
+                        Name     = "$Member"
+                        Group    = "Null"
+                    }
+                }
+            }
             Catch {
 
-				Write-Verbose "$User was not found." 
-				Write-Verbose "Appending error log."
-				"$User was not found." | Out-File $FullLogPath -Append
+                Write-Verbose "$User was not found." 
+                Write-Verbose "Appending error log."
+                "$User was not found." | Out-File $FullLogPath -Append
                 "$Date" | Out-File $FullLogPath -Append
-				$ErrorsHappened = $True
+                $ErrorsHappened = $True
 
-				Write-Verbose "Build custom object properties."
+                Write-Verbose "Build custom object properties."
                 $Properties = @{
-										Status = "Failed to find $User"
-										Username = "null"
-										Name = "null"
-										Group = "null"}  
-			}
-            Finally{
-
-				Write-Verbose "Create new custom object." 
-				$Object = New-Object -TypeName 'PSObject' -Property $Properties  
-				Write-Verbose "Display custom object." 
-				Write-Output $Object 
+                    Status   = "Failed to find $User"
+                    Username = "Null"
+                    Name     = "Null"
+                    Group    = "Null"
+                }  
             }
-		}
+            Finally {
+
+                Write-Verbose "Create new custom object." 
+                $Object = New-Object -TypeName 'PSObject' -Property $Properties  
+                Write-Verbose "Display custom object." 
+                Write-Output $Object 
+            }
+        }
     }
     END {
                                 
-		if($ErrorsHappened) { 
+        if ($ErrorsHappened) { 
 
-			Write-verbose "Error has been logged to $FullLogPath."
-		}
+            Write-verbose "Error has been logged to $FullLogPath."
+        }
     }
 }
-
 
 #TODO: Update comment block.
 #TODO: Update params Help Messages.
 Function Copy-BUSINESSADGroupMember {
 
-<#
+    <#
     .Synopsis
     Copy an exsisting Users Security & Distribution Groups to another User.
     .DESCRIPTION
@@ -171,88 +185,150 @@ Function Copy-BUSINESSADGroupMember {
 
     [cmdletBinding()]
     param(        
-        [Parameter(Mandatory=$True,
-                    HelpMessage="Who's groups do you want to copy?")] 
-                    [String]
-                    $From,
-            
-        #Distribution Group that will be appended.
-        [Parameter(Mandatory=$True,
-                    HelpMessage="What User is recieving these Groups?")] 
-                    [String]
-                    $To,
+        [Parameter(Mandatory = $True,
+            HelpMessage = "Username that has groups you want to copy?")] 
+        [String]
+        $From,
 
-        #Creates an Object for the error path variable.
+        [Parameter(Mandatory = $True,
+            HelpMessage = "What User is recieving these Groups?")] 
+        [String]
+        $To,
+
         [Parameter()]
-                    [String]
-                    $ErrorLogFilePath = $LogPreference)
+        [String]
+        $ErrorLogFilePath = $LogPreference)
+
     BEGIN {
     
-		Write-verbose "Testing if error path exists."
-		$PathBool = Test-Path -Path $ErrorLogFilePath | Out-Null
-		$Date = Get-Date | Out-Null
+        Write-Verbose "Testing if error path exists."
+        $FullLogPath = "$ErrorLogFilePath\Copy-ADGroupMember.txt"
+        $PathBool = Test-Path -Path $FullLogPath
+        $Date = Get-Date
 
-		if ($PathBool = 'False') {
-        
-            Write-Verbose "Creating $ErrorLogFilePath."
-            New-Item -Path "$ErrorLogFilePath\Copy-ADGroupMember.txt" -ItemType File -Force | Out-Null
-            Write-Verbose "Error log path created."
+        if ($PathBool) {
+
+            Write-Verbose "Log path exists."
         }
-    }
-    PROCESS {
+        elseif ($PathBool = "$false") {
 
-        Write-Host "Adding the following groups to $To" -ForegroundColor Green 
+            Write-Verbose "Creating error log directory."
+            New-Item -Path "$FullLogPath" -ItemType 'File' -Force | Out-Null
+            Write-Verbose "Error log directory created."
+        }
+    }    
+    PROCESS {
+        #Write-Host "Adding the following groups to $To" -ForegroundColor Green 
+
+        Try {
+
+            Write-Verbose "Locating $From."
+            $FromUser = Get-ADUser $From -Properties 'MemberOf' -ErrorAction 'Stop'
+            $FromName = $FromUser.Name
+            $FromGroups = $FromUser.MemberOf
+            Write-Verbose "Successful, $FromName located."
 
             Try {
-                    
-                #Get the From User's groups.
-                $FromUsername = Get-ADUser $From -Properties * -ErrorAction Stop
 
-                Try { 
+                Write-Verbose "Locating $To."
+                $ToUser = Get-ADUser $To -Properties 'MemberOf' -ErrorAction 'Stop'
+                $ToName = $ToUser.Name
+                $ToSamAccountName = $ToUser.SamAccountName
+                Write-Verbose "Successfully $ToName located."
+
+                Try {
+
+                    Write-Verbose "Iterating each group."
+                    Foreach ($Group in $FromGroups) {
                         
-                    #Get the To User.
-                    $ToUsername = Get-ADUser $To -Properties * -ErrorAction Stop
-                    $ToUsername = $ToUser.SamAccountName
+                        $Pos = $Group.IndexOf(",")
+                        $Trim = $Group.Substring(0, $Pos)
 
-                    Try {
+                        Write-Verbose "Collecting Parameters."
+                        $Parameters = @{
+                            'Identity'       = $Group
+                            'SamAccountName' = $ToSamAccountName
+                            'ErrorAction'    = 'Stop'
+                        }
                         
-                        #Send each group to the Add group cmdlet.
-                        Foreach ($Group in $FromUser.MemberOf) {
-                            
-                            $Pos = $Group.IndexOf(",")
-                            $Trim = $Group.Substring(0, $Pos)
+                        Write-Verbose "Splatting parameters to Cmdlet."
+                        $Session = Add-ADGroupMember @Parameters
+                        Write-Verbose "Cmdlet successful."
 
-							Add-ADGroupMember -Identity $Group -Member $ToUsername -ErrorAction Stop
-							Write-Host "$Trim" -ForegroundColor Cyan
-                                                                            
+                        #Write-Host "$Trim" -ForegroundColor Cyan
+
+                        Write-Verbose "Build custom object properties."
+                        $Properties = @{
+                            'Status' = "Successful"
+                            'From'   = $FromName
+                            'To'     = $ToName
+                            'Group'  = $Trim
                         }
                     }
-                    Catch {
-                        
-                        $FromUser.MemberOf | Out-File $ErrorLogFilePath -Append
-                        $ErrorsHappened = $True
-
-                        Write-Host "Failed to Add $Group to $To." -ForegroundColor Red
-                    }                 
                 }
                 Catch {
-                                        
-                    $ToUsername | Out-File $ErrorLogFilePath -Append
+                        
+                    Write-Verbose "Failed to add $Trim to $ToSamAccountName."
+                    Write-Verbose "Appending error log."
+                    "$FromGroups was not added to $ToSamAccountName." | Out-File $FullLogPath -Append
+                    "$Date" | Out-File $FullLogPath -Append
                     $ErrorsHappened = $True
 
-                    Write-Host "Failed to find $ToUsername." -ForegroundColor Red                    
-                }
+                    #Write-Host "Failed to Add $Group to $To." -ForegroundColor Red
+                    
+                    Write-Verbose "Build custom object properties."
+                    $Properties = @{
+                        'Status' = "Failed."
+                        'From'   = $FromName
+                        'To'     = $ToName
+                        'Group'  = $Trim
+                    }
+                }                 
             }
-            Catch {                                      
-
-                $From | Out-File $ErrorLogFilePath -Append
+            Catch {
+                     
+                Write-Verbose "$To was not found."
+                Write-Verbose "Appending error log."
+                "$To was not found." | Out-File $FullLogPath -Append
+                "$Date" | Out-File $FullLogPath -Append
                 $ErrorsHappened = $True
 
-                Write-Host "Failed to find $From." -ForegroundColor Red 
-            }            
-            Finally{
-			}
+                #Write-Host "Failed to find $To." -ForegroundColor Red
+
+                Write-Verbose "Build custom object properties."
+                $Properties = @{
+                    'Status' = "Missing User."
+                    'From'   = $FromName
+                    'To'     = $To
+                    'Group'  = 'Null'
+                }
+            }
         }
+        Catch {                                      
+
+            Write-Verbose "$From was not found."
+            Write-Verbose "Appending error log."
+            "$From was not found." | Out-File $FullLogPath -Append
+            "$Date" | Out-File $FullLogPath -Append
+            $ErrorsHappened = $True
+
+            #Write-Host "Failed to find $From." -ForegroundColor Red
+
+            Write-Verbose "Build custom object properties."
+                $Properties = @{
+                    'Status' = "Missing User."
+                    'From'   = $From
+                    'To'     = 'Null'
+                    'Group'  = 'Null'
+                }
+        }            
+        Finally {
+
+            Write-Verbose "Displaying custom object properties."
+            $obj = New-Object -TypeName PSObject -Property $Properties
+            Write-Output $obj  
+        }
+    }
     END {
         if ($ErrorsHappened) {
 
@@ -262,19 +338,17 @@ Function Copy-BUSINESSADGroupMember {
     }
 }
 
-
-$BackUpLog = "C:\PoSH\ADGroupMember\BackupLogs"
-
 #TODO: Add a foreach to the process block to allow mulitple users.
 #TODO: Update comment block.
 #TODO: Update params Help Messages.
 Function Remove-BUSINESSADGroupMember {
 
-<#
+    <#
     .Synopsis
         Remove an exsisting Users Security & Distribution Groups.
+
     .DESCRIPTION
-    The Remove-BUSINESSADGroupMember function uses an exsisting Active Directory Account's Groups to populate another AD Users Groups.
+        The Remove-BUSINESSADGroupMember function uses an exsisting Active Directory Account's Groups to populate another AD Users Groups.
             
     .EXAMPLE
         Remove-BUSINESSADGroupMember -Username 'UserX'
@@ -286,92 +360,153 @@ Function Remove-BUSINESSADGroupMember {
     [cmdletBinding()]
     param(
         #Path that contains the CSV file.
-        [Parameter(Mandatory=$True,
-                    HelpMessage="Who's groups do you want to copy?")] 
-                    [String[]]
-                    $Username,        
+        [Parameter(Mandatory = $True,
+            HelpMessage = "Who's groups do you want to copy?")] 
+        [String[]]
+        $Username,        
 
         #Creates an Object for the error path variable.
         [Parameter()]
-                    [String]
-                    $ErrorLogFilePath = $LogPreference)
+        [String]
+        $ErrorLogFilePath = $LogPreference)
     BEGIN {
     
-		Write-verbose "Testing if error path exists."
-		$PathBool = Test-Path -Path $ErrorLogFilePath | Out-Null
-		$Date = Get-Date | Out-Null
+        Write-Verbose "Testing if error path exists."
+        $FullLogPath = "$ErrorLogFilePath\Remove-ADGroupMember.txt"
+        $BackUpLog = "$ErrorLogFilePath\GroupsFrom$Username.txt"
+        $PathBool = Test-Path -Path $FullLogPath
+        $Date = Get-Date
 
-		if ($PathBool = 'False') {
-        
-            Write-Verbose "Creating $ErrorLogFilePath."
-            New-Item -Path "$ErrorLogFilePath\Remove-BUSINESSADGroupMember.txt" -ItemType File -Force | Out-Null
-            Write-Verbose "Error log path created."
+        if ($PathBool) {
+
+            Write-Verbose "Log path exists."
+        }
+        elseif ($PathBool = "$false") {
+
+            Write-Verbose "Creating error log directory."
+            New-Item -Path "$FullLogPath" -ItemType 'File' -Force | Out-Null
+            Write-Verbose "Error log directory created."
         }
     }
     PROCESS {
+        #Foreach user block goes here.
         Try {
-                    
-			#Get the From User's groups.
-			$ADUsername = Get-ADUser "$Username" -Properties * -ErrorAction Stop
-			$SamAccountName = $ADuser.SamAccountName
-			$MemberOf = $ADUser.MemberOf
-			$ErrorsHappened = "$FALSE"
+
+            Write-Verbose "Locating $Username."
+            $ADUser = Get-ADUser "$Username" -Properties * -ErrorAction Stop
+            $MemberOf = $ADUser.MemberOf
+            $SamAccountName = $ADUser.SamAccountName
+            $ErrorsHappened = "$false"
+            Write-Verbose "Successful, $SamAccountName located."
                                 
-            Try {
-                        
-                #Backup the Users Groups to file path.
+            Try {   
+
+                Write-Verbose "Iterating each group."                     
                 Foreach ($Group in $MemberOf) {
 
+                    Write-Verbose "Backing up group to backuplog."
                     $Group | Out-File $BackUpLog -Append -ErrorAction stop 
-                    $ErrorsHappened = "$FALSE"
+                    $ErrorsHappened = "$false"
                 }
 
-		        Write-Host "$SamAccountName's groups backed up to $BackUpLog" -ForegroundColor Green
-		        Write-Host "Removing the following groups from $SamAccountName" -ForegroundColor Green 
+                #Write-Host "$SamAccountName's groups backed up to $BackUpLog" -ForegroundColor Green
+                #Write-Host "Removing the following groups from $SamAccountName" -ForegroundColor Green 
 
                 Try {
-                            
-                    #Send each group to the Add group cmdlet.
-                    Foreach ($Group in $MemberOf) {
 
-                        $Pos = $Group.IndexOf(",")
-                        $Trim = $Group.Substring(0, $Pos)
-                            
-                        Remove-ADGroupMember -Identity $Group -Member $SamAccountName -Confirm:$False -ErrorAction Stop
-                        Write-Host "$Trim" -ForegroundColor Cyan   
-                        $ErrorsHappened = "$FALSE" 
+                    $Pos = $Group.IndexOf(",")
+                    $Trim = $Group.Substring(0, $Pos)
+
+                    Write-Verbose "Collecting Parameters."
+                    $Parameters = @{
+                        'Identity'       = $Group
+                        'SamAccountName' = $SamAccountName
+                        'ErrorAction'    = 'Stop'
+                    }
+                    
+                    Write-Verbose "Splatting parameters to Cmdlet."
+                    Remove-ADGroupMember @Parameters -Confirm:$False
+                    Write-Verbose "Cmdlet successful."
+
+                    #Write-Host "$Trim" -ForegroundColor Cyan
+
+                    Write-Verbose "Build custom object properties."
+                    $Properties = @{
+                        'Status' = "Successful"
+                        'Username'   = $SamAccountName
+                        'BackUp'     = "Successful"
+                        'Group'  = $Trim
                     }
                 }
-
                 Catch {
-                        
-                    $SamAccountName | Out-File $ErrorLogFilePath -Append
-                    $ErrorsHappened = $TRUE
-                    Write-Host "Failed to remove $SamAccountName's groups, exiting function." -ForegroundColor Red
+                    
+                    Write-Verbose "Failed to remove $Trim to $SamAccountName."
+                    Write-Verbose "Appending error log."
+                    "$Trim was not remove from $SamAccountName." | Out-File $FullLogPath -Append
+                    "$Date" | Out-File $FullLogPath -Append
+                    $ErrorsHappened = $True
+                    
+                    #Write-Host "Failed to remove $SamAccountName's groups." -ForegroundColor Red
+
+                    Write-Verbose "Build custom object properties."
+                    $Properties = @{
+                        'Status' = "Failed"
+                        'Username'   = $SamAccountName
+                        'BackUp'     = "Successful"
+                        'Group'  = $Trim
+                    }
                 }
             }
             Catch {
-                                        
-                $SamAccountName | Out-File $ErrorLogFilePath -Append
-                $ErrorsHappened = $TRUE
-                Write-Host "Failed to backup $SamAccountName's groups, exiting function." -ForegroundColor Red
+
+                Write-Verbose "Failed to backup $Trim."
+                Write-Verbose "Appending error log."
+                "$Trim was not backuped to $BackUpLog." | Out-File $FullLogPath -Append
+                "$Date" | Out-File $FullLogPath -Append
+                $ErrorsHappened = $True
+                
+                #Write-Host "Failed to backup $SamAccountName's groups." -ForegroundColor Red
+
+                Write-Verbose "Build custom object properties."
+                $Properties = @{
+                    'Status' = "Failed"
+                    'Username'   = $SamAccountName
+                    'BackUp'     = "Failed"
+                    'Group'  = $Trim
+                }
             }
         }
-        Catch {                                      
+        Catch {
 
-            $Username | Out-File $ErrorLogFilePath -Append
+            Write-Verbose "$Username was not found.."
+            Write-Verbose "Appending error log."
+            "$Username was not found." | Out-File $FullLogPath -Append
+            "$Date" | Out-File $FullLogPath -Append
             $ErrorsHappened = $True
 
-            Write-Host "Failed to find $Username." -ForegroundColor Red 
+            #Write-Host "Failed to find $Username." -ForegroundColor Red
+
+            Write-Verbose "Build custom object properties."
+            $Properties = @{
+                'Status' = "Missing User"
+                'Username'   = $Username
+                'BackUp'     = "Failed"
+                'Group'  = $Trim
+            }
         }
-                    
-        Finally{
+        Finally {
+
+            Write-Verbose "Displaying custom object properties."
+            $obj = New-Object -TypeName PSObject -Property $Properties
+            Write-Output $obj  
         }
     }
     END {
         if ($ErrorsHappened) {
 
-			Write-verbose "Error has been logged to $ErrorLogFilePath."
+            Write-verbose "Error has been logged to $ErrorLogFilePath."
         }
     }
 }
+
+#Written by Joshua Van Daalen.

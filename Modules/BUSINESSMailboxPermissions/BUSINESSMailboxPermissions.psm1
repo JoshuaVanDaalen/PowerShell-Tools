@@ -29,6 +29,8 @@ function Get-BUSINESSMailboxPermissions{
     The role this cmdlet belongs to
     .FUNCTIONALITY
     The functionality that best describes this cmdlet
+    .LINK
+		https://github.com/greenSacrifice/WindowsPowerShell/blob/master/Modules/
 #>
 
     [cmdletBinding()]
@@ -134,6 +136,8 @@ function Set-BUSINESSMailboxPermissions{
     The role this cmdlet belongs to
     .FUNCTIONALITY
     The functionality that best describes this cmdlet
+    .LINK
+		https://github.com/greenSacrifice/WindowsPowerShell/blob/master/Modules/
 #>
 
     [cmdletBinding()]
