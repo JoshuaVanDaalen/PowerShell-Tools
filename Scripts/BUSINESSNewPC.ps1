@@ -48,9 +48,9 @@
         Write-host "Adobe PDF Reader Installed." -foregroundcolor "Cyan"
     
         #Join the domain & rename the PC
-        Write-Host "Renaming computer to $NewName" -ForegroundColor "Cyan"
+        Write-Host "Renaming computer to $PCName" -ForegroundColor "Cyan"
         Write-Host "Joining $DomainName domain" -ForegroundColor "Cyan"
-        Add-Computer -ComputerName localhost -DomainName $DomainName -NewName $NewName -Credential "$DomainName\$Username" -Restart -Force
+        Add-Computer -ComputerName localhost -DomainName $DomainName -NewName $PCName -Credential "$DomainName\$AdminUsername" -Restart -Force
         Write-Host "Restarting Computer" -ForegroundColor "Cyan"
     }
 
