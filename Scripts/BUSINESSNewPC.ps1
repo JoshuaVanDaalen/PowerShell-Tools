@@ -60,4 +60,5 @@
     }
 
     END {
+        Set-ExecutionPolicy Restricted
     }
