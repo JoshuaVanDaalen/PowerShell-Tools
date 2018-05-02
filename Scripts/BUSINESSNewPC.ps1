@@ -25,6 +25,7 @@
         )
 
     BEGIN {
+        $PCName = $env:UserName
     }
 
     PROCESS { 
