@@ -8,10 +8,10 @@
 
     param(
 
-        [Parameter(Mandatory=$TRUE,
-                    HelpMessage="Enter New Computer Name.")] 
-                    [String]
-                    $PCName,
+       # [Parameter(Mandatory=$TRUE,
+        #            HelpMessage="Enter New Computer Name.")] 
+         #           [String]
+          #          $PCName,
 
         [Parameter(Mandatory=$TRUE,
                     HelpMessage="Enter Domain Name.")] 
@@ -47,6 +47,10 @@
         Write-host "Installing Adobe PDF Reader." -foregroundcolor "Cyan"
         choco install adobereader -y
         Write-host "Adobe PDF Reader Installed." -foregroundcolor "Cyan"
+
+        Write-host "Installing TeamViewer." -foregroundcolor "Cyan"
+        choco install teamviewer -y
+        Write-host "TeamViewer Installed." -foregroundcolor "Cyan"
     
         #Join the domain & rename the PC
         Write-Host "Renaming computer to $PCName" -ForegroundColor "Cyan"
