@@ -1,4 +1,6 @@
 <# 
+    Windows 10 Only
+
     -Install Software
     -Join the BUSINESS domain 
     -Rename the PC
@@ -17,6 +19,11 @@ param(
         HelpMessage = "Enter Domain Name.")] 
     [String]
     $DomainName,
+    
+    [Parameter(Mandatory = $TRUE,
+        HelpMessage = "Enter Domain Name.")] 
+    [String]
+    $DNSAddress,
 
     [Parameter(Mandatory = $TRUE,
         HelpMessage = "Enter Admin Username.")] 
@@ -50,6 +57,10 @@ PROCESS {
     choco install teamviewer -y
     Write-host "TeamViewer Installed." -foregroundcolor "Cyan"
     
+    #Add DNS record
+    Write-Host "Setting static DNS to $DNSAddress" -ForegroundColor "Cyan"
+    Set-DnsClientServerAddress -InterfaceIndex 12 -ServerAddresses ($DNSAddress, "8.8.8.8")
+
     #Join the domain & rename the PC
     Write-Host "Renaming computer to $PCName" -ForegroundColor "Cyan"
     Write-Host "Joining $DomainName domain" -ForegroundColor "Cyan"
