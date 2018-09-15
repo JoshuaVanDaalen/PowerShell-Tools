@@ -29,13 +29,13 @@ param(
 BEGIN {
     [bool] $RenameAndSetDNS = $false
     $Question = Read-Host -Prompt 'Have you done the following? Rename PC, Set DNS, & Reboot: Y/N'
-    if ($Question.ToLower() == "y" ){
+    if ($Question.ToLower() = = "y" ) {
         $RenameAndSetDNS = $tr
     }
 }
 
 PROCESS { 
-    if ($Question.ToLower() == "y" ){
+    if ($Question.ToLower() = = "y" ) {
         $RenameAndSetDNS = $tr
         
         #Create C:\installs folder.
