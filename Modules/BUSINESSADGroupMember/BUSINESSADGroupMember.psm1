@@ -1,4 +1,129 @@
 ﻿$LogPreference = "C:\PoSH\BUSINESSADGroupMember"
+Function Get-BUSINESSADGroupMember {
+
+    <#
+    .Synopsis
+	    Get all groups each user is a member of.
+
+    .DESCRIPTION
+        The Get-BUSINESSADGroupMember function accepts an array of usernames and returns all group memberships.        
+
+    .EXAMPLE
+        Get-BUSINESSADGroupMember -Username 'UserX'
+
+    .EXAMPLE
+		Get-BUSINESSADGroupMember -Username 'UserX','UserY','UserZ'
+    
+	.NOTES		
+		You need to have the Active Directory module to use this function.
+
+	.LINK
+		https://github.com/greenSacrifice/WindowsPowerShell/tree/master/Modules
+#>
+
+    [cmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True,
+            HelpMessage = "Enter Username")] 
+        [String[]]
+        $Username,
+
+        [Parameter()]
+        [String]
+        $ErrorLogFilePath = $LogPreference)
+
+    BEGIN {
+    
+        Write-Verbose "Testing if error path exists."
+        $FullLogPath = "$ErrorLogFilePath\Get-ADGroupMember.txt"
+        $PathBool = Test-Path -Path $FullLogPath
+        $Date = Get-Date
+
+        if ($PathBool) {
+
+            Write-Verbose "Log path exists."
+        }
+        elseif ($PathBool = "$false") {
+
+            Write-Verbose "Creating error log directory."
+            New-Item -Path "$FullLogPath" -ItemType 'File' -Force | Out-Null
+            Write-Verbose "Error log directory created."
+        }
+    }
+    PROCESS {
+
+        Write-Verbose "Iterating each user."
+        Foreach ($User in $Username) {
+            
+            Try {                      
+                 
+                Write-Verbose "Locating $User."
+                $ADUser = Get-ADUser -Identity "$User" -Properties 'MemberOf' -ErrorAction 'Stop'
+                $DisplayName = $ADUser.Name
+                $SamAccountName = $ADUser.SamAccountName
+                $MemberOf = $ADUser.MemberOf
+                $GroupCount = $MemberOf.Count
+                $ErrorsHappened = $false
+                Write-Verbose "Successful, $DisplayName located."
+                Write-Verbose "$DisplayName has $GroupCount groups."
+                Write-Verbose "Name of each group:"                
+            }
+            Catch {
+
+                Write-Verbose "$User was not found."
+                Write-Verbose "Appending error log."
+                "$User was not found." | Out-File $FullLogPath -Append
+                "$Date" | Out-File $FullLogPath -Append
+                $ErrorsHappened = $True
+
+                Write-Verbose "Build custom object properties."
+                $Properties = @{
+                    'Canonical Name' = ''
+                    'Group Mail'     = ''
+                    'Group Name'     = ''
+                    'Username'       = "Failed to find $User"
+                }
+            }
+            Finally {
+                if ($ErrorsHappened -eq $false) { 
+                    Foreach ($DistinguishedName in $MemberOf) {
+
+                        $Group = Get-ADGroup $DistinguishedName -Properties 'Name', 'Mail', 'CanonicalName'
+                        $GroupName = $Group.Name
+                        $GroupMail = $Group.Mail
+                        $CanonicalName = $Group.CanonicalName
+      
+                        if ($GroupMail.length -lt 1) {
+                            $GroupMail = 'Null'
+                        }
+                
+                        $Properties = @{
+                            'Canonical Name' = $CanonicalName
+                            'Group Mail'     = $GroupMail
+                            'Group Name'     = $GroupName
+                            'Username'       = $SamAccountName
+                        }
+                        Write-Verbose "Displaying custom object properties."
+                        $PSObject = New-Object -TypeName PSObject -Property $Properties
+                        Write-Output $PSObject 
+                    }
+                }
+                elseif ($ErrorsHappened -eq $True) {
+                    Write-Verbose "Displaying error object properties."
+                    $PSObject = New-Object -TypeName PSObject -Property $Properties
+                    Write-Output $PSObject 
+                }
+                              
+            }
+        }
+    }
+    END {
+
+        if ($ErrorsHappened) { 
+            Write-verbose "Error has been logged to $FullLogPath."
+        }
+    }
+}
 
 Function Add-BUSINESSADGroupMember {
 
@@ -318,12 +443,12 @@ Function Copy-BUSINESSADGroupMember {
             #Write-Host "Failed to find $From." -ForegroundColor Red
 
             Write-Verbose "Build custom object properties."
-                $Properties = @{
-                    'Status' = "Missing User."
-                    'From'   = $From
-                    'To'     = 'Null'
-                    'Group'  = 'Null'
-                }
+            $Properties = @{
+                'Status' = "Missing User."
+                'From'   = $From
+                'To'     = 'Null'
+                'Group'  = 'Null'
+            }
         }            
         Finally {
 
@@ -438,10 +563,10 @@ Function Remove-BUSINESSADGroupMember {
 
                     Write-Verbose "Build custom object properties."
                     $Properties = @{
-                        'Status' = "Successful"
-                        'Username'   = $SamAccountName
-                        'BackUp'     = "Successful"
-                        'Group'  = $Trim
+                        'Status'   = "Successful"
+                        'Username' = $SamAccountName
+                        'BackUp'   = "Successful"
+                        'Group'    = $Trim
                     }
                 }
                 Catch {
@@ -456,10 +581,10 @@ Function Remove-BUSINESSADGroupMember {
 
                     Write-Verbose "Build custom object properties."
                     $Properties = @{
-                        'Status' = "Failed"
-                        'Username'   = $SamAccountName
-                        'BackUp'     = "Successful"
-                        'Group'  = $Trim
+                        'Status'   = "Failed"
+                        'Username' = $SamAccountName
+                        'BackUp'   = "Successful"
+                        'Group'    = $Trim
                     }
                 }
             }
@@ -475,10 +600,10 @@ Function Remove-BUSINESSADGroupMember {
 
                 Write-Verbose "Build custom object properties."
                 $Properties = @{
-                    'Status' = "Failed"
-                    'Username'   = $SamAccountName
-                    'BackUp'     = "Failed"
-                    'Group'  = $Trim
+                    'Status'   = "Failed"
+                    'Username' = $SamAccountName
+                    'BackUp'   = "Failed"
+                    'Group'    = $Trim
                 }
             }
         }
@@ -494,10 +619,10 @@ Function Remove-BUSINESSADGroupMember {
 
             Write-Verbose "Build custom object properties."
             $Properties = @{
-                'Status' = "Missing User"
-                'Username'   = $Username
-                'BackUp'     = "Failed"
-                'Group'  = $Trim
+                'Status'   = "Missing User"
+                'Username' = $Username
+                'BackUp'   = "Failed"
+                'Group'    = $Trim
             }
         }
         Finally {
