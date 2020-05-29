@@ -52,7 +52,7 @@ Try {
   ##########################################################################################
   # Create Development database
   $Parameters.DatabaseName = $Var.CopyDatabaseName
-  $Parameters.CopyDatabaseName = $Var.CopyDatabaseName + "-dev"
+  $Parameters.CopyDatabaseName = "$($Var.CopyDatabaseName)-dev"
   $Parameters.ErrorVariable = "devAzSqlDatabaseCopy"
   ##########################################################################################
 
