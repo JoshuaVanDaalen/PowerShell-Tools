@@ -17,7 +17,7 @@ function Set-BUSINESSContext {
         Add-BUSINESSContext 'PROD'
 
         .LINK
-        Online version: https://github.com/greenSacrifice/WindowsPowerShell
+        Online version: https://github.com/greenSacrifice/PowerShell/
     #>
     [cmdletBinding()]
     Param (

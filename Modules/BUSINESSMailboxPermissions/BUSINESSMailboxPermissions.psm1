@@ -30,7 +30,7 @@ function Get-BUSINESSMailboxPermissions{
     .FUNCTIONALITY
     The functionality that best describes this cmdlet
     .LINK
-		https://github.com/greenSacrifice/WindowsPowerShell/blob/master/Modules/
+		https://github.com/greenSacrifice/PowerShell/
 #>
 
     [cmdletBinding()]
@@ -137,7 +137,7 @@ function Set-BUSINESSMailboxPermissions{
     .FUNCTIONALITY
     The functionality that best describes this cmdlet
     .LINK
-		https://github.com/greenSacrifice/WindowsPowerShell/blob/master/Modules/
+		https://github.com/greenSacrifice/PowerShell/
 #>
 
     [cmdletBinding()]

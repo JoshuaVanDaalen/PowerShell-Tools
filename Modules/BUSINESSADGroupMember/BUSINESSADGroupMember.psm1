@@ -18,7 +18,7 @@ Function Get-BUSINESSADGroupMember {
 		You need to have the Active Directory module to use this function.
 
 	.LINK
-		https://github.com/greenSacrifice/WindowsPowerShell/tree/master/Modules
+		https://github.com/greenSacrifice/PowerShell/
 #>
 
     [cmdletBinding()]
@@ -149,7 +149,7 @@ Function Add-BUSINESSADGroupMember {
 		You need to have the Active Directory module to use this function.
 
 	.LINK
-		https://github.com/greenSacrifice/WindowsPowerShell/tree/master/Modules
+		https://github.com/greenSacrifice/PowerShell/
 #>
 
     [cmdletBinding()]
@@ -302,7 +302,7 @@ Function Copy-BUSINESSADGroupMember {
     You need to have the exchange module to use this function.
 
 	.LINK
-		https://github.com/greenSacrifice/WindowsPowerShell/tree/master/Modules
+		https://github.com/greenSacrifice/PowerShell/
     #>
     [cmdletBinding()]
     param(        
@@ -469,7 +469,7 @@ Function Remove-BUSINESSADGroupMember {
     You need to have the exchange module to use this function.
     
     .LINK
-		https://github.com/greenSacrifice/WindowsPowerShell/tree/master/Modules
+		https://github.com/greenSacrifice/PowerShell/
 #>
 
     [cmdletBinding()]

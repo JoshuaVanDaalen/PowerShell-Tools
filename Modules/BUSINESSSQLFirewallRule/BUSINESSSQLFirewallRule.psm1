@@ -23,7 +23,7 @@ Function Add-BUSINESSSQLFirewallRule {
         Add-BUSINESSSQLFirewallRule 'Josh - 20200529' '52.95.132.125' -AzContextName 'PROD'
 
         .LINK
-        Online version: https://github.com/greenSacrifice/WindowsPowerShell
+        Online version: https://github.com/greenSacrifice/PowerShell/
     #>
 
     [cmdletBinding()]
