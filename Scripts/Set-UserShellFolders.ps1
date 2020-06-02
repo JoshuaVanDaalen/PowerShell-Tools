@@ -1,10 +1,12 @@
 #Requires -RunAsAdministrator
+Set-StrictMode -Version 'Latest'
+
 # Has to be admin to update REGEDIT and move files into correct location
 
 if ($env:OneDrive.Contains('OneDrive - ')) {
     $profileLocation = "$env:OneDrive\User Profile"
     $RegKeyPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
-    If (Test-Path $profileLocation -eq $false) { mkdir $profileLocation }
+    if((Test-Path $profileLocation) -eq $false) { mkdir $profileLocation }
     # These locations with GUID are for when redirecting to OneDrive 
     $ShellFolders = @{
         "Desktop"                                = "Desktop" 
