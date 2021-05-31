@@ -87,6 +87,3 @@ Connect-AzureRmAccount
 Install-Module -Name Az -AllowClobber
 Install-Module -Name ExchangeOnlineManagement
 ```
-# Using the older RM cmdlet
-#Set-AzureRmContext -SubscriptionId (Get-AzureRmSubscription | Where-Object { $_.Name -match $mySubscription }).Id
-Set-AzContext -SubscriptionId
