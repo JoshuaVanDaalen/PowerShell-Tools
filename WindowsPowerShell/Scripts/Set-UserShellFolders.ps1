@@ -6,7 +6,7 @@ Set-StrictMode -Version 'Latest'
 if ($env:OneDrive.Contains('OneDrive - ')) {
     $profileLocation = "$env:OneDrive\User Profile"
     $RegKeyPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
-    if((Test-Path $profileLocation) -eq $false) { mkdir $profileLocation }
+    if ((Test-Path $profileLocation) -eq $false) { mkdir $profileLocation }
     # These locations with GUID are for when redirecting to OneDrive 
     $ShellFolders = @{
         "Desktop"                                = "Desktop" 
@@ -52,11 +52,11 @@ if ($env:OneDrive.Contains('OneDrive - ')) {
     }
 
     Stop-Process -Name 'Explorer' 
-    Start 'Explorer.exe'
+    Start-Process 'Explorer.exe'
 
 }
 else {
     Write-Warning "Sync OneDrive to the PC before running this script"
     # Sync down OneDrive folder
-    START 'https://office.com'
+    Start-Process 'https://office.com'
 }

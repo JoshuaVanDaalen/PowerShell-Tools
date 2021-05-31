@@ -30,31 +30,32 @@
         Set-Location \'
 
     $PathVariables = @{Path = $ItemPath
-                        ItemType = "File"
-                        Value = $ItemValue}
+        ItemType            = "File"
+        Value               = $ItemValue
+    }
 
-    New-item @PathVariables
+    New-Item @PathVariables
 }
 
 #Install Programs
 {
 
-#Install Chocolatey
-    Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    #Install Chocolatey
+    Set-ExecutionPolicy Bypass -Scope Process -Force; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
-#Install Chrome
+    #Install Chrome
     Choco install googlechrome -y
 
-#Install Firefox
+    #Install Firefox
     Choco install firefox -y
 
-#Install Sysinternals
+    #Install Sysinternals
     Choco install sysinternals -y
 
-#Install Visual Studio Code
+    #Install Visual Studio Code
     choco install visualstudiocode -y
 
-#Install Git
+    #Install Git
     choco install git -y
 }
 

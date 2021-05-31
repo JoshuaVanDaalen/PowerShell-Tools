@@ -61,3 +61,39 @@ Example:
 ```powershell
 C:\Users\$env:USERNAME\Documents\WindowsPowerShell\Modules\AzADUser\AzADUser.psm1
 ```
+
+## Common modules
+Here are some common modules I've been installing for WindowsPowerShell and PowerShell
+
+### WindowsPowerShell
+```powershell
+# Install modules
+Install-Module PowershellGet -Force
+Update-Module PowershellGet
+Install-Module AzureADPreview
+Install-Module -Name AzureRM -AllowClobber
+Install-Module -Name ExchangeOnlineManagement
+Install-Module -Name SqlServer
+Install-Module -Name MSOnline
+
+# Connect to services
+Connect-ExchangeOnline -UserPrincipalName 'joshua@domain.com' -ShowProgress $true
+Connect-AzureAD
+Connect-AzureRmAccount
+```
+### PowerShell
+
+```powershell
+Install-Module -Name Az -AllowClobber
+Install-Module -Name ExchangeOnlineManagement
+```
+# 
+
+$mySubscription = 'Tally Dev general PAYG'
+Get-AzContext -ListAvailable
+Set-AzContext -SubscriptionId (Get-AzContext -ListAvailable |
+    Where-Object { $_.Name -match $mySubscription }).Subscription 
+
+# Using the older RM cmdlet
+#Set-AzureRmContext -SubscriptionId (Get-AzureRmSubscription | Where-Object { $_.Name -match $mySubscription }).Id
+Set-AzContext -SubscriptionId
