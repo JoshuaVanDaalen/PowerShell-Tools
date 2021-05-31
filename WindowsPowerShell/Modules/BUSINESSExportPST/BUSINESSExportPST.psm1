@@ -3,8 +3,8 @@ $LogPreference = "C:\PoSH Logs\BUSINESSExportPST\New-BUSINESSExportPST.txt"
 #TODO: Update help
 #TODO: File path should = rootdrive?
 
-function New-BUSINESSExportPST{
-<#
+function New-BUSINESSExportPST {
+    <#
     .SYNOPSIS
 
     Export Users Outlook Data File.
@@ -35,23 +35,23 @@ function New-BUSINESSExportPST{
     The functionality that best describes this cmdlet
 #>
 
-[cmdletBinding()]
-param(
+    [cmdletBinding()]
+    param(
 
-    [Parameter(Mandatory=$True,
-                HelpMessage="Enter The Username.")] 
-                [String[]]
-                $Username,
+        [Parameter(Mandatory = $True,
+            HelpMessage = "Enter The Username.")] 
+        [String[]]
+        $Username,
                 
-    [Parameter()]
-                [String]
-                $ErrorLogFilePath = $LogPreference)
+        [Parameter()]
+        [String]
+        $ErrorLogFilePath = $LogPreference)
                    
-    BEGIN{   
+    BEGIN {   
             
         Remove-Item -Path $ErrorLogFilePath -Force -ErrorAction SilentlyContinue
         $ErrorsHappened = $false
-		$FilePath = "\\FILESERVER\MailboxExport"
+        $FilePath = "\\FILESERVER\MailboxExport"
                                     
     }         
     PROCESS {
@@ -72,9 +72,10 @@ param(
                     $Export = New-MailboxExportRequest -Mailbox $SamAccountName -FilePath $FilePath -ErrorAction 'Stop'
                     
                     $Properties = @{Status = "Export in progress."
-                                    Username = $SamAccountName
-                                    Name = $ADUser.Name
-                                    Email = $ADUser.Mail}
+                        Username           = $SamAccountName
+                        Name               = $ADUser.Name
+                        Email              = $ADUser.Mail
+                    }
                 }
                 Catch {
                     
@@ -83,26 +84,28 @@ param(
                     $SamAccountName | Out-File $ErrorLogFilePath -Append
 
                     $Properties = @{Status = "Failed to export."
-                                    Username = $SamAccountName
-                                    Name = $ADUser.Name
-                                    Email = $ADUser.Mail}
+                        Username           = $SamAccountName
+                        Name               = $ADUser.Name
+                        Email              = $ADUser.Mail
+                    }
                 }
             }
             Catch {
 
-                    $ErrorsHappened = $True
-                    Write-Host "Couldn't find $User." -ForegroundColor 'red'
-                    $User | Out-File $ErrorLogFilePath -Append
+                $ErrorsHappened = $True
+                Write-Host "Couldn't find $User." -ForegroundColor 'red'
+                $User | Out-File $ErrorLogFilePath -Append
 
-                    $Properties = @{Status = "Failed to find $user."
-                                    Username = $NULL
-                                    Name = $NULL
-                                    Email = $NULL}                    
+                $Properties = @{Status = "Failed to find $user."
+                    Username           = $NULL
+                    Name               = $NULL
+                    Email              = $NULL
+                }                    
             }                        
             Finally {
                                       
-                    $obj = New-Object -TypeName PSObject -Property $Properties
-                    Write-Output $obj                         
+                $obj = New-Object -TypeName PSObject -Property $Properties
+                Write-Output $obj                         
             }
         }
     }
