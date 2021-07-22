@@ -9,7 +9,7 @@ function Get-SwyftxAccessToken {
                 'user-agent'   = 'pwsh' 
                 'Content-Type' = 'application/json'
             }
-            $Body = '{"apiKey": "TU0HduJXK1L5aVIhW8hsgsdy0XyaqLphIi9_ZP9HyrAwT"}'
+            $Body = '{"apiKey": ""}'
             $Method = 'POST'
             
             $splats = @{
