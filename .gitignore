@@ -7,4 +7,4 @@
 
 # Local History for Visual Studio Code
 .history/
-*/SwyftxAccessToken.psm1
+*/PowerShell/Modules/Swyftx/SwyftxAccessToken/SwyftxAccessToken.psm1
