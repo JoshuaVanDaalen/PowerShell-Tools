@@ -1,0 +1,48 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptionId": {
+            "value": "72453068-f9fa-4921-a7fe-ae9ac7891d86"
+        },
+        "name": {
+            "value": "func-swyftx"
+        },
+        "location": {
+            "value": "Australia Southeast"
+        },
+        "hostingPlanName": {
+            "value": "asp-swyftx"
+        },
+        "serverFarmResourceGroup": {
+            "value": "rg-swyftx"
+        },
+        "alwaysOn": {
+            "value": false
+        },
+        "storageAccountName": {
+            "value": "stswyftx"
+        },
+        "use32BitWorkerProcess": {
+            "value": false
+        },
+        "powerShellVersion": {
+            "value": "~7"
+        },
+        "sku": {
+            "value": "Dynamic"
+        },
+        "skuCode": {
+            "value": "Y1"
+        },
+        "workerSize": {
+            "value": "0"
+        },
+        "workerSizeId": {
+            "value": "0"
+        },
+        "numberOfWorkers": {
+            "value": "1"
+        }
+    }
+}

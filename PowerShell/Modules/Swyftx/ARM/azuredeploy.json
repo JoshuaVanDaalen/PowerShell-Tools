@@ -1,0 +1,493 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subscriptionId": {
+            "type": "String"
+        },
+        "name": {
+            "type": "String"
+        },
+        "location": {
+            "type": "String"
+        },
+        "hostingPlanName": {
+            "type": "String"
+        },
+        "serverFarmResourceGroup": {
+            "type": "String"
+        },
+        "alwaysOn": {
+            "type": "Bool"
+        },
+        "storageAccountName": {
+            "type": "String"
+        },
+        "use32BitWorkerProcess": {
+            "type": "Bool"
+        },
+        "powerShellVersion": {
+            "type": "String"
+        },
+        "sku": {
+            "type": "String"
+        },
+        "skuCode": {
+            "type": "String"
+        },
+        "workerSize": {
+            "type": "String"
+        },
+        "workerSizeId": {
+            "type": "String"
+        },
+        "numberOfWorkers": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2018-05-01",
+            "name": "[parameters('serverFarmResourceGroup')]",
+            "location": "Australia Southeast",
+            "properties": {
+            }
+        },
+        {
+            "name": "resourceDeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-10-01",
+            "resourceGroup": "[parameters('serverFarmResourceGroup')]",
+            "dependsOn": [
+                "[parameters('serverFarmResourceGroup')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "type": "microsoft.insights/components",
+                            "apiVersion": "2020-02-02-preview",
+                            "name": "appi-swyftx",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [],
+                            "tags": {},
+                            "properties": {
+                                "Application_Type": "web"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Storage/storageAccounts",
+                            "apiVersion": "2019-06-01",
+                            "name": "[parameters('storageAccountName')]",
+                            "dependsOn": [],
+                            "location": "[parameters('location')]",
+                            "tags": {},
+                            "sku": {
+                                "name": "Standard_LRS"
+                            },
+                            "properties": {
+                                "supportsHttpsTrafficOnly": true,
+                                "minimumTlsVersion": "TLS1_2"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Web/serverfarms",
+                            "apiVersion": "2018-11-01",
+                            "name": "[parameters('hostingPlanName')]",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [],
+                            "tags": {},
+                            "sku": {
+                                "Tier": "[parameters('sku')]",
+                                "Name": "[parameters('skuCode')]"
+                            },
+                            "kind": "",
+                            "properties": {
+                                "name": "[parameters('hostingPlanName')]",
+                                "workerSize": "[parameters('workerSize')]",
+                                "workerSizeId": "[parameters('workerSizeId')]",
+                                "numberOfWorkers": "[parameters('numberOfWorkers')]"
+                            }
+                        },
+                        {
+                            "type": "Microsoft.Web/sites",
+                            "apiVersion": "2018-11-01",
+                            "name": "[parameters('name')]",
+                            "location": "[parameters('location')]",
+                            "dependsOn": [
+                                "microsoft.insights/components/appi-swyftx",
+                                "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+                                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+                            ],
+                            "tags": {},
+                            "kind": "functionapp",
+                            "properties": {
+                                "name": "[parameters('name')]",
+                                "siteConfig": {
+                                    "appSettings": [
+                                        {
+                                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                                            "value": "~3"
+                                        },
+                                        {
+                                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                                            "value": "powershell"
+                                        },
+                                        {
+                                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                                            "value": "dca17119-78db-4ac6-a54b-8d58bb87a40a"
+                                        },
+                                        {
+                                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                                            "value": "InstrumentationKey=dca17119-78db-4ac6-a54b-8d58bb87a40a;IngestionEndpoint=https://australiasoutheast-0.in.applicationinsights.azure.com/"
+                                        },
+                                        {
+                                            "name": "AzureWebJobsStorage",
+                                            "value": "DefaultEndpointsProtocol=https;AccountName=stswyftx;AccountKey=fh5iBuCFxqCpE7iI62MddJiyT7RVNOU6P5nLC281oeTiMPuo+FukWr37Dfh1wEmRHo96s8bjIaIH1Q1klbQ5MA==;EndpointSuffix=core.windows.net"
+                                        },
+                                        {
+                                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                                            "value": "DefaultEndpointsProtocol=https;AccountName=stswyftx;AccountKey=fh5iBuCFxqCpE7iI62MddJiyT7RVNOU6P5nLC281oeTiMPuo+FukWr37Dfh1wEmRHo96s8bjIaIH1Q1klbQ5MA==;EndpointSuffix=core.windows.net",
+                                        },
+                                        {
+                                            "name": "WEBSITE_CONTENTSHARE",
+                                            "value": "[concat(toLower(parameters('name')), '-fileshare')]"
+                                        }
+                                    ],
+                                    "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]",
+                                    "powerShellVersion": "[parameters('powerShellVersion')]"
+                                },
+                                "serverFarmId": "[concat('/subscriptions/', parameters('subscriptionId'),'/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+                            }
+                        }
+                    ],
+                    "outputs": {
+                    }
+                }
+            }
+        }
+    ]
+}
+
+// using namespace System.Net
+
+// # Input bindings are passed in via param block.
+// param($Request, $TriggerMetadata)
+
+// # Write to the Azure Functions log stream.
+// Write-Host "PowerShell HTTP trigger function processed a request."
+
+// # Interact with query parameters or the body of the request.
+// $name = $Request.Query.Name
+// if (-not $name) {
+//     $name = $Request.Body.Name
+// }
+// ####################################################################
+// function Get-SwyftxAccessToken {
+//     [cmdletBinding()]
+//     Param ( )
+//     BEGIN { }
+//     PROCESS {
+//         try { 
+//             $Uri = 'https://api.swyftx.com.au/auth/refresh/'
+//             $Headers = @{ 
+//                 # 'user-agent'   = 'pwsh' 
+//                 'Content-Type' = 'application/json'
+//             }
+//             $Body = '{"apiKey": ""}'
+//             $Method = 'POST'
+            
+//             $splats = @{
+//                 'Uri'         = $Uri
+//                 'Method'      = $Method
+//                 'Headers'     = $Headers
+//                 'Body'        = $Body
+//                 'ErrorAction' = 'Stop'
+//             }
+            
+//             $session = Invoke-RestMethod @splats
+//             $accessToken = "Bearer $($session.accessToken)"
+      
+//             Write-Output $accessToken
+//         }
+//         catch { 
+//             # $err = $_.Exception
+//             # throw $err
+//             throw $_
+
+//         }
+//     }
+//     END { }
+// }
+// function Remove-SwyftxAccessToken {
+//     [cmdletBinding()]    
+//     Param (
+//         [Parameter(Mandatory = $True )][string]$Token
+//     )
+//     BEGIN { }
+//     PROCESS {
+//         try { 
+//             $Uri = 'https://api.swyftx.com.au/auth/logout/'
+//             $Headers = @{ 
+//                 'user-agent'    = 'pwsh' 
+//                 'Authorization' = $Token
+//             }
+//             $Body = $null
+//             $Method = 'POST'
+            
+//             $splats = @{
+//                 'Uri'         = $Uri
+//                 'Method'      = $Method
+//                 'Headers'     = $Headers
+//                 'Body'        = $Body
+//                 'ErrorAction' = 'Stop'
+//             }
+            
+//             $session = Invoke-RestMethod @splats
+//             Write-Output $session
+//         }
+//         catch { 
+//             # $err = $_.Exception
+//             # throw $err
+//             throw $_
+
+//         }
+//     }
+//     END { }
+// }
+// function Invoke-SwyftxRequest {
+//     [cmdletBinding()]
+//     Param (
+//         [Parameter(Mandatory = $True )][string]$Uri,
+//         [Parameter(Mandatory = $True )][string]$Method,
+//         [Parameter(Mandatory = $False )][hashtable]$Headers,
+//         [Parameter(Mandatory = $False )][string]$Body = $null
+//     )
+//     BEGIN {
+//         $accessToken = Get-SwyftxAccessToken
+//     }
+//     PROCESS {
+//         Try {
+
+//             $Headers += @{
+//                 'Authorization' = $accessToken
+//                 # 'user-agent'    = 'pwsh'
+//                 'Content-Type'  = 'application/json'
+//             }
+
+//             $splats = @{
+//                 'Uri'         = $Uri
+//                 'Method'      = $Method
+//                 'Headers'     = $Headers 
+//                 'Body'        = $Body
+//                 'ErrorAction' = 'Stop'
+//             }
+            
+//             $session = Invoke-RestMethod @splats
+//             Write-Output $session
+//         }
+//         Catch {
+//             throw $_
+//         }
+//     }
+//     END {
+//         Remove-SwyftxAccessToken -Token $accessToken |
+//             Out-Null
+//         # $host.ui.RawUI.WindowTitle = "$Subscription - $($context.Account.Id) - $((Get-Date).ToShortDateString())"
+//     }
+// }
+// function Get-SwyftxAccountBalance {
+//     [cmdletBinding()]
+//     Param (
+//     )
+//     BEGIN { }
+//     PROCESS {
+//         Try {
+
+//             $uri = 'https://api.swyftx.com.au/user/balance/'
+//             $splats = @{
+//                 'Uri'         = $uri
+//                 'Method'      = 'GET'
+//                 'ErrorAction' = 'Stop'
+//             }
+
+//             $session = Invoke-SwyftxRequest @splats
+//             Write-Output $session
+//         }
+//         Catch {
+//             throw $_
+//         }
+//     }
+//     END { }
+// }
+// function Get-SwyftxAssetInfo {
+//     [cmdletBinding()]
+//     Param (
+//         [Parameter(Mandatory = $True )][string]$AssetId
+//     )
+//     BEGIN { }
+//     PROCESS {
+//         Try {
+
+//             $uri = "https://api.swyftx.com.au/markets/info/basic/$AssetId/"
+//             $splats = @{
+//                 'Uri'         = $uri
+//                 'Method'      = 'GET'
+//                 'ErrorAction' = 'Stop'
+//             }
+
+//             $session = Invoke-SwyftxRequest @splats
+//             Write-Output $session
+//         }
+//         Catch {
+//             throw $_
+//         }
+//     }
+//     END { }
+// }
+// function Get-SwyftxWallet {
+//     [cmdletBinding()]
+//     Param ( 
+//         [Parameter(Mandatory = $false )][Long]$AssetId,
+//         [Parameter(Mandatory = $false )][switch]$ShowPrice = $false,
+//         [Parameter(Mandatory = $false )][switch]$ShowBuySell = $false
+//     )
+//     BEGIN {
+//         $wallet = Get-SwyftxAccountBalance | Where-Object { $_.availableBalance -gt 1 }
+//     }
+//     PROCESS {
+//         Try {
+//             if ($AssetId) {
+
+//                 $walletContents = [ordered]@{ }
+
+//                 $walletValues = $wallet | Where-Object { $_.assetId -eq $AssetId }
+                    
+//                 $coin = Get-SwyftxAssetInfo -AssetId $AssetId
+                
+//                 [float]$availableBalance = $walletValues.availableBalance
+//                 [float]$coinPrice = $coin.Sell
+//                 $coinValue = ($availableBalance * $coinPrice)
+
+//                 $mAvailableBalance = [math]::Round($availableBalance, 2)
+
+//                 $walletContents.Coin = $coin.Name
+//                 $walletContents.Quantity = $ShowPrice ? [math]::Round($availableBalance, 2) : "{0:N0}" -f $mAvailableBalance 
+//                 $walletContents.Value = $ShowPrice ? "{0:C0}" -f $coinValue : $coinValue
+
+//                 if ($ShowBuySell -eq $true) {
+                    
+//                     $walletContents.Buy = $coinPrice
+//                     $walletContents.Sell = $coin.Sell 
+    
+//                 }
+//                 [PSCustomObject]$walletContents
+//             }
+//             else {
+//                 foreach ($a in $wallet) {
+//                     if ($a.assetId -ne 1 -and $a.assetId -ne 36  ) {
+
+//                         $params = @{
+//                             AssetId     = $a.assetId
+//                             ShowPrice   = $ShowPrice.IsPresent
+//                             ShowBuySell = $ShowBuySell.IsPresent
+//                         }
+
+//                         Get-SwyftxWallet @params
+
+//                     }
+//                 }
+//             }
+//         }
+//         Catch {
+//             throw $_
+//         }
+//     }
+//     END { }
+// }
+// function Show-SwyftxWallet {
+//     [cmdletBinding()]
+//     Param ( 
+//         [Parameter(Mandatory = $false )][Bool]$ShowCoin = $false
+//     )
+//     BEGIN { }
+//     PROCESS {
+//         Try {
+
+//             $total = 0
+//             # $accountBalance = Get-SwyftxHolding
+//             $accountBalance = 0
+//             $walletContents = Get-SwyftxWallet
+    
+//             foreach ($coin in $walletContents) {
+//                 $total = $total + $coin.Value
+//                 $coin.Value = "{0:C0}" -f $coin.Value
+//             }
+            
+//             $profit = $total - $accountBalance
+//             if ($walletContents.count -lt 2) {
+//                 $shiba = Get-SwyftxAssetInfo 293
+//                 $inFor = 19520.988777
+//                 $loss = $profit - $inFor 
+                
+//                 $walletContents = 
+//                 [PSCustomObject]@{
+//                     'Coin'     = $walletContents.Coin
+//                     'Value'    = "{0:C0}" -f $profit
+//                     'Cash'     = "{0:C0}" -f $loss
+//                     'Quantity' = $walletContents.Quantity
+//                     'Buy'      = $shiba.Buy
+//                     'Sell'     = $shiba.Sell
+//                     'Time'     = (Get-Date -Format "HH:mm:ss")
+//                 }
+//             }
+//             elseif ($walletContents.count -gt 1) {
+//                 $walletContents += 
+//                 [PSCustomObject]@{
+//                     'Coin'     = 'Cash'
+//                     'Value'    = "{0:C0}" -f $profit
+//                     'Quantity' = "{0:C0}" -f $total
+//                 }
+//             }
+
+//             Write-Output $walletContents 
+//         }
+//         Catch {
+//             throw $_
+//         }
+//     }
+//     END { }
+// }
+
+// ####################################################################
+// $w = Show-SwyftxWallet
+// $body = $w.Cash.replace('$','')
+
+// if ($name.tolower() -eq 'jvd') {
+//     $body = $w
+// }
+
+// # Associate values to output bindings by calling 'Push-OutputBinding'.
+// Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+//     StatusCode = [HttpStatusCode]::OK
+//     Body = $body
+// })
+
+// ///////////////////////////////////////////////////////////////////////
+
+// using namespace System.Net
+
+// # Input bindings are passed in via param block.
+// param($Request, $TriggerMetadata)
+
+// $t = (Invoke-RestMethod -Method post -Uri 'https://func-swyftx.azurewebsites.net/api/Get-Coin?code=vRoN0N7Tgdwxs1DO3VrFIlWes9fiEfCOa/BgWilIT0DpWngTTbar3w==')
+
+// # Associate values to output bindings by calling 'Push-OutputBinding'.
+// Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+//     StatusCode = [HttpStatusCode]::OK
+//     Body = "$t"
+// })

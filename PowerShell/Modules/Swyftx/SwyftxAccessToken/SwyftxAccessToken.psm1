@@ -6,10 +6,10 @@ function Get-SwyftxAccessToken {
         try { 
             $Uri = 'https://api.swyftx.com.au/auth/refresh/'
             $Headers = @{ 
-                'user-agent'   = 'pwsh' 
+                # 'user-agent'   = 'pwsh' 
                 'Content-Type' = 'application/json'
             }
-            $Body = '{"apiKey": ""}'
+            $Body = '{"apiKey": "GFNqjK2HCqcu_4wNl6Kxdz1rx3C4Vp6CG_JJoldvr48Uq"}'
             $Method = 'POST'
             
             $splats = @{

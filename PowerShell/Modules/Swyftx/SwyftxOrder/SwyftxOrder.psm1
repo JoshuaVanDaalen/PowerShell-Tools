@@ -54,16 +54,6 @@ function Get-CoinbaseHistory {
     [cmdletBinding()]
     Param ( )
     BEGIN { 
-        # History table
-        # Transaction Asset	    Quantity    AUD     Timestamp
-        # Buy	        ETH	    0.71689265	250	    2020-07-17T06:18:32Z
-        # Buy	        ETH	    0.55395562	250	    2020-07-28T10:03:38Z
-        # Buy	        ETH	    0.13813442	72	    2020-08-01T07:29:48Z
-        # Send	        ETH	    1.40898269		    2021-05-28T09:24:02Z
-        # Buy	        XRP	    167.876285	50	    2020-07-14T17:09:13Z
-        # Buy	        XRP	    187.501174	67	    2020-07-30T07:31:57Z
-        # Buy	        XRP	    327.708109	142	    2020-08-05T07:04:38Z
-        # Send	        XRP	    683.085378		    2021-05-28T09:36:00Z
 
     }
     PROCESS {

@@ -14,7 +14,7 @@ function Invoke-SwyftxRequest {
 
             $Headers += @{
                 'Authorization' = $accessToken
-                'user-agent'    = 'pwsh'
+                # 'user-agent'    = 'pwsh'
                 'Content-Type'  = 'application/json'
             }
 
